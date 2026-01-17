@@ -1,40 +1,42 @@
 <?php
 session_start();
-include "koneksi.php"; // pastikan file koneksi ada
+include "koneksi.php";
 
 $error = "";
 
-// Proses login
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $email = $_POST['email'] ?? '';
-    $password = $_POST['password'] ?? '';
+/* ======================
+   PROSES LOGIN
+====================== */
+if (isset($_POST['login'])) {
+    $email    = $_POST['email'];
+    $password = $_POST['password'];
 
-    // Query user berdasarkan email
-    $query  = "SELECT * FROM users WHERE email = ?";
-    $stmt   = mysqli_prepare($conn, $query);
+    $query = "SELECT * FROM users WHERE email = ?";
+    $stmt  = mysqli_prepare($conn, $query);
     mysqli_stmt_bind_param($stmt, "s", $email);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
 
     if ($row = mysqli_fetch_assoc($result)) {
-        // Cek password (password di database harus di-hash)
+        // LOGIN SEDERHANA (password masih polos)
         if ($password === $row['password']) {
-    $_SESSION['email'] = $row['email'];
-    $_SESSION['name']  = $row['name'];
-    $_SESSION['role']  = $row['role'];
-    header("Location: dashboard.php");
-    exit;
-} else {
-    $error = "Password salah.";
-}
-
-        
+            $_SESSION['login'] = true;
+            $_SESSION['email'] = $row['email'];
+            $_SESSION['name']  = $row['name'];
+            $_SESSION['role']  = $row['role'];
+        } else {
+            $error = "Password salah.";
+        }
     } else {
         $error = "Email tidak ditemukan.";
     }
 }
-?>
 
+/* ======================
+   JIKA BELUM LOGIN
+====================== */
+if (!isset($_SESSION['login'])) {
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -56,16 +58,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             border-radius: 10px;
             color: white;
         }
-        h2 {
-            text-align: center;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
+        h2 { text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
         input {
             width: 100%;
             padding: 8px;
@@ -82,9 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             cursor: pointer;
             margin-top: 10px;
         }
-        .btn-reset {
-            background: #f44336;
-        }
+        .btn-reset { background: #f44336; }
         .error {
             background: #ff4d4d;
             padding: 8px;
@@ -105,26 +98,88 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <div class="login-card">
     <h2>POLGAN MART</h2>
 
-    <?php if (!empty($error)) echo "<div class='error'>$error</div>"; ?>
+    <?php if ($error != "") echo "<div class='error'>$error</div>"; ?>
 
     <form method="post">
         <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" placeholder="Masukkan email anda" required>
+            <label>Email</label>
+            <input type="email" name="email" required>
         </div>
 
         <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" placeholder="Masukkan password" required>
+            <label>Password</label>
+            <input type="password" name="password" required>
         </div>
 
-        <button type="submit" class="btn">Login</button>
+        <button type="submit" name="login" class="btn">Login</button>
         <button type="reset" class="btn btn-reset">Batal</button>
     </form>
 
-    <div class="footer">
-        <p>© 2026 POLGAN MART</p>
-    </div>
+    <div class="footer">© 2026 POLGAN MART</div>
+</div>
+
+</body>
+</html>
+<?php
+exit;
+}
+
+/* ======================
+   DASHBOARD
+====================== */
+$page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background:#f5f5f5; }
+        .sidebar {
+            width: 220px;
+            min-height: 100vh;
+            background: #2c3e50;
+            color: white;
+            position: fixed;
+        }
+        .sidebar a {
+            display: block;
+            padding: 12px;
+            color: white;
+            text-decoration: none;
+        }
+        .sidebar a:hover { background: #34495e; }
+        .content {
+            margin-left: 240px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h4 class="text-center mt-3">Dashboard</h4>
+    <a href="index.php?page=dashboard">Home</a>
+    <a href="index.php?page=listproducts">List Produk</a>
+    <a href="index.php?page=customer">Customer</a>
+    <a href="index.php?page=transaksi">Transaksi</a>
+    <a href="index.php?page=laporan">Laporan</a>
+    <a href="index.php?page=profile">Profile</a>
+    <a href="logout.php" class="text-danger">Logout</a>
+</div>
+
+<div class="content">
+    <?php
+    if ($page == "dashboard") {
+        include "dashboard.php";
+    } elseif ($page == "listproducts") {
+        include "listproducts.php";
+    } elseif ($page == "profile") {
+        include "profile.php";
+    }
+    ?>
 </div>
 
 </body>
