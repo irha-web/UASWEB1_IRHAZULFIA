@@ -20,7 +20,7 @@ if (!$query) {
 
         <div class="d-flex justify-content-between mb-3">
             <h4>List Produk</h4>
-            <a href="#" class="btn btn-success">+ Tambah Produk</a>
+            <a href="tambah_barang.php" class="btn btn-success">+ Tambah Produk</a>
         </div>
 
         <table class="table table-bordered table-striped text-center align-middle">
@@ -48,12 +48,20 @@ if (!$query) {
                     <td><?= $row['kode_barang'] ?></td>
                     <td><?= $row['nama_barang'] ?></td>
                     <td><?= $row['kategori'] ?></td>
-                    <td>Rp <?= number_format($row['harga']) ?></td>
+                    <td>Rp <?= number_format($row['harga'],0,',','.') ?></td>
                     <td><?= $row['stok'] ?></td>
                     <td><?= $row['satuan'] ?></td>
                     <td>
-                        <a href="#" class="btn btn-primary btn-sm">Edit</a>
-                        <a href="#" class="btn btn-danger btn-sm">Hapus</a>
+                        <a href="edit_barang.php?id=<?= $row['id_barang'] ?>" 
+                           class="btn btn-primary btn-sm">
+                           Edit
+                        </a>
+
+                        <a href="hapus_barang.php?id=<?= $row['id_barang'] ?>" 
+                           class="btn btn-danger btn-sm"
+                           onclick="return confirm('Yakin ingin menghapus data ini?')">
+                           Hapus
+                        </a>
                     </td>
                 </tr>
             <?php
